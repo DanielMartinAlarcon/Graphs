@@ -25,9 +25,9 @@ def ancestors(scion, lineage):
             bloodlines[length].append(descent_line)
 
     max_length = max(bloodlines.keys())
-    ealiest_ancestors = [line[0] for line in bloodlines[max_length]]
+    ealiest_ancestor = min([line[0] for line in bloodlines[max_length]])
 
     if max_length == 1: 
         return -1
     else: 
-        return ealiest_ancestors
+        return ealiest_ancestor

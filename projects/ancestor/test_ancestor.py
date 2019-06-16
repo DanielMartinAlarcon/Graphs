@@ -16,13 +16,13 @@ lineage =   [(1, 3),
 
 
 def test_single_ascestor():
-    assert ancestors(7, lineage) == [4]
+    assert ancestors(7, lineage) == 4
 
 def test_multiple_ancestors():
-    assert ancestors(6, lineage) == [12,14]
+    assert ancestors(6, lineage) == 12
 
 def test_intermediate_node():
-    assert ancestors(5, lineage) == [4]
+    assert ancestors(5, lineage) == 4
 
 def test_no_parents():
     assert ancestors(11, lineage) == -1
