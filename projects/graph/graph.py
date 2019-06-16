@@ -20,9 +20,9 @@ class Graph:
         Add a directed edge to the graph.
         """
         if v1 not in self.vertices:
-            print("v1 is not a valid vertex")
+            print(f"{v1} is not a valid vertex")
         elif v2 not in self.vertices:
-            print("v2 is not a valid vertex")
+            print(f"{v2} is not a valid vertex")
         else:
             self.vertices[v1].add(v2)
         
