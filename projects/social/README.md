@@ -48,13 +48,19 @@ Note that in this sample, Users 3, 4 and 9 are not in User 1's extended social n
 
 1. To create 100 users with an average of 10 friends each, how many times would you need to call `addFriendship()`? Why?
 
+        100 users with an average of 10 friends each means 1,000 friendships total, which will require exactly 500 calls to `addFriendship()`, because each new friendship creates 2 friends.
+
 2. If you create 1000 users with an average of 5 random friends each, what percentage of other users will be in a particular user's extended social network? What is the average degree of separation between a user and those in his/her extended network?
 
+        I tested this emipirically (`measure_network.py`).  For each of the 1000 users, on average, there were 988 other users in their social network.  It took a while to calculate, for these 1000 users.
 
+        This took way too long to calculate as such.  However, I did get these numbers.  For 100 users and 5 average friends, the average network was 96 users, and the average distance was 3.88.  When I increased that to 200 users and 5 avg friends, I got 196 people in the network and 4.41 degrees of separation.  
 
 ## 4. Stretch Goal
 
 1. You might have found the results from question #2 above to be surprising. Would you expect results like this in real life? If not, what are some ways you could improve your friendship distribution model for more realistic results?
 
 2. If you followed the hints for part 1, your `populateGraph()` will run in O(n^2) time. Refactor your code to run in O(n) time. Are there any tradeoffs that come with this implementation?
+
+        I actually wrote it to run in O(n) the first time around.  I'm not aware of tradeoffs, though I do know that I won't normally hit the exact average user number because friends are added two-by-two.
 
