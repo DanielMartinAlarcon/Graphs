@@ -19,11 +19,106 @@ world.loadGraph(roomGraph)
 # UNCOMMENT TO VIEW MAP
 world.printRooms()
 
-player = Player("Name", world.startingRoom)
+player = Player("DMA", world.startingRoom)
 
 # Fill this out
+from graph import Graph
+from util import Stack
 traversalPath = []
+path_by_ids = []
+graph = Graph()
+visited_rooms = set()
+identified_rooms = set()
+dir_stack = Stack()
 
+def reverse_dir(direction):
+    if direction == 'n':
+        return 's'
+    if direction == 's':
+        return 'n'
+    if direction == 'e':
+        return 'w'
+    if direction == 'w':
+        return 'e'
+
+while True:
+    room = player.currentRoom
+    # log the room as identified and visited
+    identified_rooms.add(room.id)
+    visited_rooms.add(room.id)
+    path_by_ids.append(room.id)
+
+    # Add it to our list of nodes
+    graph.add_node(room.id)
+
+    # Identify all the rooms accessible from here,
+    # add them as nodes in the graph, and note the edges
+    # that connect this room with that one
+    for direction in room.getExits():
+        adjacent_room_id = room.getRoomInDirection(direction).id
+        identified_rooms.add(adjacent_room_id)
+        graph.add_node(adjacent_room_id)
+        graph.add_edge(room.id, adjacent_room_id, direction)
+    
+    # If we've visited all the identified rooms, we're done
+    if identified_rooms == visited_rooms:
+        break
+
+    # Find directions to rooms we haven't visited yet.
+    def find_unvisited_directions(room_object):
+        return [direction for direction, ID in graph.nodes[room_object.id].items() if ID not in visited_rooms]
+
+    unvisited_directions = find_unvisited_directions(room)
+
+    # # Find directions to rooms that themselves have unvisited directions
+    revisited_directions = []
+    for direction in graph.nodes[room.id].keys():
+        neighbor = room.getRoomInDirection(direction)
+        if neighbor is None:
+            continue
+        if len(find_unvisited_directions(neighbor)) > 0:
+            revisited_directions.append(direction)
+    
+    # If there's new directions, pick a random one
+    if len(unvisited_directions) > 0:
+        next_direction = random.choice(unvisited_directions)
+        dir_stack.push(next_direction)
+    # If there's new directions starting from a neighbor we've seen before, go to that neighbor
+    elif len(revisited_directions) > 0:
+        next_direction = random.choice(revisited_directions)
+        dir_stack.push(next_direction)
+    else: 
+        # Backtrack the way you came last
+        next_direction = reverse_dir(dir_stack.pop())
+
+    # print('\nCurrent room:', room.id)
+    # print('unvisited_directions:', unvisited_directions)
+    # print('visited rooms:', visited_rooms)
+    # print('dir_stack:', dir_stack.stack)
+    # print(f'Travel --> {next_direction}')
+    # print('-----------------')
+
+    traversalPath.append(next_direction)
+    player.travel(next_direction)
+
+
+# print('Final room:', room.id)
+# print('visited rooms:', visited_rooms)
+# print('Steps needed:', len(traversalPath))
+print('Path:', path_by_ids)
+# print('Graph:')
+# for item in graph.nodes.items():
+#     print(item)
+
+    # direction = random.choice(room.getExits())
+    # next_room = room.getRoomInDirection(direction)
+    # # We now know what room we're stepping into
+    # graph.nodes[room.id][direction] = next_room.id
+    # player.travel(direction)
+
+
+
+    
 
 
 # TRAVERSAL TEST
