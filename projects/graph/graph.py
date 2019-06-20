@@ -7,52 +7,156 @@ class Graph:
     """Represent a graph as a dictionary of vertices mapping labels to edges."""
     def __init__(self):
         self.vertices = {}
+        self.colors = {}
     def add_vertex(self, vertex):
         """
         Add a vertex to the graph.
         """
-        pass  # TODO
+        self.vertices[vertex] = set()
+        self.colors[vertex] = 'white'
+
     def add_edge(self, v1, v2):
         """
         Add a directed edge to the graph.
         """
-        pass  # TODO
+        if v1 not in self.vertices:
+            print(f"{v1} is not a valid vertex")
+        elif v2 not in self.vertices:
+            print(f"{v2} is not a valid vertex")
+        else:
+            self.vertices[v1].add(v2)
+        
     def bft(self, starting_vertex):
         """
         Print each vertex in breadth-first order
         beginning from starting_vertex.
         """
-        pass  # TODO
+        q = Queue()
+        q.enqueue(starting_vertex)
+        visited_nodes = []
+        while q.size() > 0:
+            current_node = q.dequeue()
+            
+            if self.colors[current_node] == 'white':
+                self.colors[current_node] = 'gray'
+                visited_nodes.append(current_node)
+                
+            for node in self.vertices[current_node]:
+                if self.colors[node] == 'white':
+                    q.enqueue(node)
+        
+        # Reset colors
+        for vertex in self.colors:
+            self.colors[vertex] = 'white'
+
+        return visited_nodes
+
     def dft(self, starting_vertex):
         """
         Print each vertex in depth-first order
         beginning from starting_vertex.
         """
-        pass  # TODO
+        stack = Stack()
+        stack.push(starting_vertex)
+        visited_nodes = []
+        while stack.size() > 0:
+            current_node = stack.pop()
+
+            if self.colors[current_node] == 'white':
+                self.colors[current_node] = 'gray'
+                visited_nodes.append(current_node)
+
+            for node in self.vertices[current_node]:
+                if self.colors[node] == 'white':
+                    stack.push(node)
+
+        # Reset colors
+        for vertex in self.colors:
+            self.colors[vertex] = 'white'
+
+        return visited_nodes
+
     def dft_recursive(self, starting_vertex):
         """
         Print each vertex in depth-first order
         beginning from starting_vertex.
         This should be done using recursion.
         """
-        pass  # TODO
+        if self.colors[starting_vertex] == 'white':
+            self.colors[starting_vertex] = 'gray'
+            print('dft_rec ', starting_vertex)
+
+            for node in self.vertices[starting_vertex]:
+                self.dft_recursive(node)
+
+
     def bfs(self, starting_vertex, destination_vertex):
         """
         Return a list containing the shortest path from
         starting_vertex to destination_vertex in
         breath-first order.
         """
-        pass  # TODO
+        # Reset all nodes to white
+        for v in self.colors:
+            self.colors[v] = 'white'
+
+        q = Queue()
+        q.enqueue(starting_vertex)
+        all_paths = {v:[] for v in self.vertices}
+
+        # Initialize for first node
+        all_paths[starting_vertex].append(starting_vertex)
+        self.colors[starting_vertex] = 'gray'
+
+        while q.size() > 0:
+            parent = q.queue[0]
+            
+            for child in self.vertices[parent]:
+                if self.colors[child] == 'white': 
+                    self.colors[child] = 'gray'
+                    # Add to the queue
+                    q.enqueue(child)
+                    # Create a new path, based on the parent's path
+                    all_paths[child] = all_paths[parent] + [child]
+                    
+            q.dequeue()
+            self.colors[parent] = 'black'
+
+        return all_paths[destination_vertex]
+
+
     def dfs(self, starting_vertex, destination_vertex):
         """
         Return a list containing a path from
         starting_vertex to destination_vertex in
         depth-first order.
         """
-        pass  # TODO
+        # Reset all nodes to white
+        for v in self.colors:
+            self.colors[v] = 'white'
 
+        stack = Stack()
+        stack.push(starting_vertex)
+        all_paths = {v:[] for v in self.vertices}
 
+        # Initialize for first node
+        all_paths[starting_vertex].append(starting_vertex)
+        self.colors[starting_vertex] = 'gray'
 
+        while stack.size() > 0:
+            parent = stack.pop()
+            
+            for child in self.vertices[parent]:
+                if self.colors[child] == 'white': 
+                    self.colors[child] = 'gray'
+                    stack.push(child)
+                    # Create a new path, based on the parent's path 
+                    all_paths[child] = all_paths[parent] + [child]
+                    
+            self.colors[parent] = 'black'
+
+        return all_paths[destination_vertex]
+        
 
 
 if __name__ == '__main__':
@@ -76,11 +180,12 @@ if __name__ == '__main__':
     graph.add_edge(2, 3)
     graph.add_edge(4, 6)
 
+
     '''
     Should print:
         {1: {2}, 2: {3, 4}, 3: {5}, 4: {6, 7}, 5: {3}, 6: {3}, 7: {1, 6}}
     '''
-    print(graph.vertices)
+    print('\nVertices: ', graph.vertices)
 
     '''
     Valid DFT paths:
@@ -89,7 +194,7 @@ if __name__ == '__main__':
         1, 2, 4, 7, 6, 3, 5
         1, 2, 4, 6, 3, 5, 7
     '''
-    graph.dft(1)
+    print('\nDFT: ', graph.dft(1))
 
     '''
     Valid BFT paths:
@@ -106,7 +211,7 @@ if __name__ == '__main__':
         1, 2, 4, 3, 7, 6, 5
         1, 2, 4, 3, 7, 5, 6
     '''
-    graph.bft(1)
+    print('\nBFT: ', graph.bft(1))
 
     '''
     Valid DFT recursive paths:
@@ -115,12 +220,14 @@ if __name__ == '__main__':
         1, 2, 4, 7, 6, 3, 5
         1, 2, 4, 6, 3, 5, 7
     '''
+    print("\nRecursive DFT:")
     graph.dft_recursive(1)
 
     '''
     Valid BFS path:
         [1, 2, 4, 6]
     '''
+    print('\nBreadth-first search (1 to 6): ')
     print(graph.bfs(1, 6))
 
     '''
@@ -128,4 +235,5 @@ if __name__ == '__main__':
         [1, 2, 4, 6]
         [1, 2, 4, 7, 6]
     '''
+    print('\nDepth-first search (1 to 6): ')
     print(graph.dfs(1, 6))

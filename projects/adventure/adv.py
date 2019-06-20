@@ -19,10 +19,122 @@ world.loadGraph(roomGraph)
 # UNCOMMENT TO VIEW MAP
 world.printRooms()
 
-player = Player("Name", world.startingRoom)
+player = Player("DMA", world.startingRoom)
 
 # Fill this out
+from graph import Graph
+from util import Stack
 traversalPath = []
+path_by_ids = []
+graph = Graph()
+visited_rooms = set()
+identified_rooms = set()
+dir_stack = Stack()
+
+def reverse_dir(direction):
+    if direction == 'n':
+        return 's'
+    if direction == 's':
+        return 'n'
+    if direction == 'e':
+        return 'w'
+    if direction == 'w':
+        return 'e'
+
+def map_and_get_neighbors(room_object):
+    identified_rooms.add(room_object.id)
+    graph.add_node(room_object.id)
+    neighbors = []
+    for direction in room_object.getExits():
+        neighbor = room_object.getRoomInDirection(direction)
+        identified_rooms.add(neighbor.id)
+        graph.add_node(neighbor.id)
+        graph.add_edge(room_object.id, neighbor.id, direction)
+        neighbors.append((direction, neighbor))
+    return neighbors
+
+def is_spur1(room_object):
+    exits = room_object.getExits()
+    if len(exits) == 1:
+        return True
+    else:
+        return False
+
+def has_new_neighbors(room_object):
+    neighbors1 = map_and_get_neighbors(room_object)
+    for n1 in neighbors1:
+        if n1[1].id not in visited_rooms:
+            return True
+    return False
+
+def get_new_neighbors(room_object):
+    neighbors1 = map_and_get_neighbors(room_object)
+    new_neighbors = [n for n in neighbors1 if n[1].id not in visited_rooms]
+    return new_neighbors
+
+while True:
+# for _ in range(5):
+    room = player.currentRoom
+    neighbors1 = map_and_get_neighbors(room) # identify all current neighbors
+    visited_rooms.add(room.id)
+    path_by_ids.append(room.id)
+    
+    # If we've visited all the identified rooms, we're done
+    if identified_rooms == visited_rooms:
+        break
+
+    new_neighbors = get_new_neighbors(room)
+    new_spurs1 = [n for n in new_neighbors if is_spur1(n[1])]    
+    neighbors_with_new_neighbors = [n for n in neighbors1 if has_new_neighbors(n[1])]
+    
+    neighbors_with_new_spurs = []
+    for n1 in neighbors_with_new_neighbors:
+        neighbors2 = get_new_neighbors(n1[1])
+        for n2 in neighbors2:
+            if is_spur1(n2[1]):
+                neighbors_with_new_spurs.append(n1)
+
+    if len(new_spurs1) > 0:
+        next_direction = random.choice(new_spurs1)[0]
+        dir_stack.push(next_direction)
+    
+    elif len(new_neighbors) > 0:
+        next_direction = random.choice(new_neighbors)[0]
+        dir_stack.push(next_direction)
+    
+    elif len(neighbors_with_new_spurs) > 0:
+        next_direction = random.choice(neighbors_with_new_spurs)[0]
+        dir_stack.push(next_direction)
+    
+    elif len(neighbors_with_new_neighbors) > 0:
+        next_direction = random.choice(neighbors_with_new_neighbors)[0]
+        dir_stack.push(next_direction) 
+    
+    else: 
+        # Backtrack the way you came last
+        next_direction = reverse_dir(dir_stack.pop())
+
+    # print('\nCurrent room:', room.id)
+    # # print('new_directions:', new_directions)
+    # print('visited rooms:', visited_rooms)
+    # # print('dir_stack:', dir_stack.stack)
+    # print('new_neighbors',[u[1].id for u in new_neighbors])
+    # print('new_spurs1',[u[1].id for u in new_spurs1])
+    # print('neighbors_with_new_neighbors',[n[1].id for n in neighbors_with_new_neighbors])
+    # print(f'Travel --> {next_direction}')
+    # print('-----------------')
+
+    traversalPath.append(next_direction)
+    player.travel(next_direction)
+
+world.printRooms()
+print('Final room:', room.id)
+# print('visited rooms:', visited_rooms)
+print('Steps needed:', len(traversalPath))
+print('Path:', path_by_ids)
+# print('Graph:')
+# for item in graph.nodes.items():
+#     print(item)
 
 
 
@@ -39,7 +151,7 @@ if len(visited_rooms) == len(roomGraph):
     print(f"TESTS PASSED: {len(traversalPath)} moves, {len(visited_rooms)} rooms visited")
 else:
     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
-    print(f"{len(roomGraph) - len(visited_rooms)} unvisited rooms")
+    print(f"{len(roomGraph) - len(visited_rooms)} new rooms")
 
 
 
@@ -53,3 +165,78 @@ else:
 #         player.travel(cmds[0], True)
 #     else:
 #         print("I did not understand that command.")
+
+
+
+####################### Garbage code ##############################
+    # # Find directions to rooms we haven't visited yet.
+    # def find_new_directions(room_object):
+    #     return [direction for direction, ID in graph.nodes[room_object.id].items() if ID not in visited_rooms]
+
+    # new_directions = find_new_directions(room)
+
+    # # # Find directions to rooms that themselves have new directions
+    # revisited_directions = []
+    # for direction in graph.nodes[room.id].keys():
+    #     neighbor = room.getRoomInDirection(direction)
+    #     if neighbor is None:
+    #         continue
+    #     if len(find_new_directions(neighbor)) > 0:
+    #         revisited_directions.append(direction)
+
+
+    # # Look three steps ahead, find the longest path possible in each direction
+    # print('Current room', room.id)
+    # path_lengths_from_here = {}
+    # for d1, n1 in neighbors:
+    #     max_steps = 0
+    #     neighbors2 = map_and_get_neighbors(n1)
+    #     for d2, n2 in neighbors2:
+    #         neighbors3 = map_and_get_neighbors(n2)
+    #         for d3, n3 in neighbors3:
+    #             steps = len(set([room.id, n1.id, n2.id, n3.id]))
+    #             # This path only counts if the end node is one we haven't visited yet
+    #             if steps > max_steps and n3.id not in visited_rooms:
+    #                 max_steps = steps
+    #                 print(f'{d1}{n1.id} -> {d2}{n2.id} -> {d3}{n3.id}  Steps = {steps}')
+        
+    #     path_lengths_from_here[d1] = max_steps
+    #     print()
+    
+    # # Choose the direction with the shortest maximum path length.
+    # directions_from_here = {}
+    # for direction, length in path_lengths_from_here.items():
+    #     if length == 0:
+    #         continue
+    #     if length not in directions_from_here:
+    #         directions_from_here[length] = [direction]
+    #     else:
+    #         directions_from_here[length].append(direction)
+
+    # ways_to_go = min(directions_from_here.items(), key=lambda x: x[0])[1]
+    
+    # print('ways_to_go', ways_to_go)
+    # print('path_lengths_from_here', path_lengths_from_here)
+    # print('directions_from_here', directions_from_here)
+
+    # new_directions = find_new_directions(room)
+
+    # # # Find directions to rooms that themselves have new directions
+    # revisited_directions = []
+    # for direction in graph.nodes[room.id].keys():
+    #     neighbor = room.getRoomInDirection(direction)
+    #     if neighbor is None:
+    #         continue
+    #     if len(find_new_directions(neighbor)) > 0:
+    #         revisited_directions.append(direction)
+    
+    # If a neighbor is a spur, go there first
+
+        # # If any of the level-1 neighbors is a spur of length 1, go there first.
+
+
+
+
+
+
+
